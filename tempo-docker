@@ -1,7 +1,7 @@
-# Use Node.js as the base image
+# Use Node.js lightweight image
 FROM node:18-alpine
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
 # Copy package.json and package-lock.json
@@ -16,5 +16,38 @@ COPY . .
 # Expose the application port
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "server.js"]
+# Default Tempo URL (can be overridden at runtime)
+ENV TEMPO_URL="http://tempo-distributed-distributor.monitoring:4318/v1/traces"
+
+# Start the application (passing dynamic Tempo URL)
+CMD ["sh", "-c", "TEMPO_URL=$TEMPO_URL node server.js"]
+
+
+
+
+------
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracing-app
+  namespace: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tracing-app
+  template:
+    metadata:
+      labels:
+        app: tracing-app
+    spec:
+      containers:
+      - name: tracing-app
+        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/tracing-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: TEMPO_URL
+          value: "http://tempo-distributed-distributor.monitoring:4318/v1/traces"
