@@ -24,7 +24,7 @@ CMD ["sh", "-c", "TEMPO_URL=$TEMPO_URL node server.js"]
 
 
 
-
+---- docker run -p 3000:3000 -e TEMPO_URL="http://custom-tempo-url:4318/v1/traces" tracing-app
 ------
 
 
@@ -51,3 +51,7 @@ spec:
         env:
         - name: TEMPO_URL
           value: "http://tempo-distributed-distributor.monitoring:4318/v1/traces"
+
+
+
+---
